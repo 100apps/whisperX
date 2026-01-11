@@ -156,22 +156,22 @@ docker run --rm --gpus all \
 
 ### Pull from Docker Hub
 
-Images are available on Docker Hub (replace `<username>` with your Docker Hub username, or use `marginleft` for the public images):
+Images are available on Docker Hub:
 
 ```bash
 # Pull specific version
-docker pull <username>/whisperx-cuda12:3.7.4
-docker pull <username>/whisperx-cpu:3.7.4
+docker pull 100apps/whisperx-cuda12:3.7.4
+docker pull 100apps/whisperx-cpu:3.7.4
 
 # Or pull latest
-docker pull <username>/whisperx-cuda12:latest
-docker pull <username>/whisperx-cpu:latest
+docker pull 100apps/whisperx-cuda12:latest
+docker pull 100apps/whisperx-cpu:latest
 ```
 
 Run:
 
 ```bash
-docker run --rm --gpus all -v "$PWD":/workspace <username>/whisperx-cuda12:latest /workspace/audio.wav
+docker run --rm --gpus all -v "$PWD":/workspace 100apps/whisperx-cuda12:latest /workspace/audio.wav
 ```
 
 ### Pushing to Docker Hub
