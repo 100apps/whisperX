@@ -113,30 +113,28 @@ You may also need to install ffmpeg, rust etc. Follow openAI instructions here h
 
 <h2 align="left" id="docker">Docker 🐳</h2>
 
-We provide ready-to-build Docker images for both GPU (CUDA 12.8) and CPU.
+We provide Docker images for both GPU (CUDA 12.8) and CPU.
 
 ### Build locally
+
+Use the provided build script to build both images:
+
+```bash
+./scripts/build_docker.sh
+```
+
+This will build and tag:
+- `whisperx/cpu:3.7.4` and `whisperx/cpu:latest`
+- `whisperx/cuda12:3.7.4` and `whisperx/cuda12:latest`
+
+### Run
 
 GPU (requires NVIDIA driver + Docker with `nvidia-container-toolkit`):
 
 ```bash
-docker build -f Dockerfile.cuda12 -t whisperx:cuda12 .
-```
-
-CPU:
-
-```bash
-docker build -f Dockerfile.cpu -t whisperx:cpu .
-```
-
-### Run
-
-GPU:
-
-```bash
 docker run --rm --gpus all \
   -v "$PWD":/workspace \
-  whisperx:cuda12 /workspace/path/to/audio.wav --model large-v2 --output_format srt
+  whisperx/cuda12:latest /workspace/path/to/audio.wav --model large-v2 --output_format srt
 ```
 
 CPU:
@@ -144,7 +142,7 @@ CPU:
 ```bash
 docker run --rm \
   -v "$PWD":/workspace \
-  whisperx:cpu /workspace/path/to/audio.wav --device cpu --compute_type int8 --output_format srt
+  whisperx/cpu:latest /workspace/path/to/audio.wav --device cpu --compute_type int8 --output_format srt
 ```
 
 Speaker diarization (GPU/CPU) — set your Hugging Face token:
@@ -153,22 +151,27 @@ Speaker diarization (GPU/CPU) — set your Hugging Face token:
 docker run --rm --gpus all \
   -e HF_TOKEN=YOUR_HF_TOKEN \
   -v "$PWD":/workspace \
-  whisperx:cuda12 /workspace/path/to/audio.wav --diarize --hf_token "$HF_TOKEN" --highlight_words True
+  whisperx/cuda12:latest /workspace/path/to/audio.wav --diarize --hf_token "$HF_TOKEN" --highlight_words True
 ```
 
-### Pre-built images (GHCR)
+### Pull from Docker Hub
 
-On pushes to `main`, GitHub Actions build and push images to GHCR:
-
-- `ghcr.io/<owner>/whisperx:cuda12`
-- `ghcr.io/<owner>/whisperx:cpu`
-- `ghcr.io/<owner>/whisperx:latest` (alias of `cpu`)
-
-Pull and run:
+Images are available on Docker Hub:
 
 ```bash
-docker pull ghcr.io/<owner>/whisperx:cuda12
-docker run --rm --gpus all -v "$PWD":/workspace ghcr.io/<owner>/whisperx:cuda12 /workspace/audio.wav
+# Pull specific version
+docker pull whisperx/cuda12:3.7.4
+docker pull whisperx/cpu:3.7.4
+
+# Or pull latest
+docker pull whisperx/cuda12:latest
+docker pull whisperx/cpu:latest
+```
+
+Run:
+
+```bash
+docker run --rm --gpus all -v "$PWD":/workspace whisperx/cuda12:latest /workspace/audio.wav
 ```
 
 ### Speaker Diarization

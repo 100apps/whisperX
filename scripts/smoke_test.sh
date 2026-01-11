@@ -1,18 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE_TAG=${1:-"whisperx:cpu"}
+# Determine image tag and device settings
+if [ "${1:-}" == "gpu" ]; then
+  IMAGE_TAG="whisperx/cuda12:latest"
+  DEVICE="cuda"
+  COMPUTE_TYPE="float16"
+  DOCKER_OPTS="--gpus all"
+else
+  IMAGE_TAG=${1:-"whisperx/cpu:latest"}
+  DEVICE="cpu"
+  COMPUTE_TYPE="int8"
+  DOCKER_OPTS=""
+fi
 
-WORKDIR="$(pwd)"
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-echo "[smoke] Workspace: $WORKDIR"
+echo "[smoke] Project root: $PROJECT_ROOT"
+echo "[smoke] Image: $IMAGE_TAG"
+echo "[smoke] Device: $DEVICE"
 
-# 1) Run whisperx on the sample (CPU mode)
-docker run --rm \
-  -v "$WORKDIR":/workspace \
+# 1) Run whisperx on the sample
+docker run --rm $DOCKER_OPTS \
+  -v "$PROJECT_ROOT":/workspace \
   "$IMAGE_TAG" /workspace/scripts/sample.wav \
-    --device cpu \
-    --compute_type int8 \
+    --device $DEVICE \
+    --compute_type $COMPUTE_TYPE \
     --output_format txt \
     --output_dir /workspace/scripts \
     --model tiny \
@@ -20,13 +35,13 @@ docker run --rm \
     --batch_size 1 \
     --no_align
 
-echo "[smoke] Output files:" && ls -lh "/workspace/scripts" || true
+echo "[smoke] Output files:" && ls -lh "$PROJECT_ROOT/scripts" || true
 
 # 2) Validate output exists and is non-empty
-if [ -f "/workspace/scripts/sample.txt" ]; then
-  echo "[smoke] SUCCESS: CLI executed and produced an output file: /workspace/scripts/sample.txt"
+if [ -f "$PROJECT_ROOT/scripts/sample.txt" ]; then
+  echo "[smoke] SUCCESS: CLI executed and produced an output file: $PROJECT_ROOT/scripts/sample.txt"
   exit 0
 else
-  echo "[smoke] FAILURE: Output file not created: /workspace/scripts/sample.txt"
+  echo "[smoke] FAILURE: Output file not created: $PROJECT_ROOT/scripts/sample.txt"
   exit 1
 fi
