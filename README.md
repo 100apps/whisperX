@@ -156,23 +156,37 @@ docker run --rm --gpus all \
 
 ### Pull from Docker Hub
 
-Images are available on Docker Hub:
+Images are available on Docker Hub (replace `<username>` with your Docker Hub username, or use `marginleft` for the public images):
 
 ```bash
 # Pull specific version
-docker pull whisperx/cuda12:3.7.4
-docker pull whisperx/cpu:3.7.4
+docker pull <username>/whisperx-cuda12:3.7.4
+docker pull <username>/whisperx-cpu:3.7.4
 
 # Or pull latest
-docker pull whisperx/cuda12:latest
-docker pull whisperx/cpu:latest
+docker pull <username>/whisperx-cuda12:latest
+docker pull <username>/whisperx-cpu:latest
 ```
 
 Run:
 
 ```bash
-docker run --rm --gpus all -v "$PWD":/workspace whisperx/cuda12:latest /workspace/audio.wav
+docker run --rm --gpus all -v "$PWD":/workspace <username>/whisperx-cuda12:latest /workspace/audio.wav
 ```
+
+### Pushing to Docker Hub
+
+The push script automatically detects your Docker Hub username:
+
+```bash
+# Login to Docker Hub first
+docker login
+
+# Push images
+./scripts/push_docker.sh
+```
+
+This will push to `<your-username>/whisperx-cpu` and `<your-username>/whisperx-cuda12`.
 
 ### Speaker Diarization
 
