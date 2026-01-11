@@ -111,6 +111,66 @@ uv sync --all-extras --dev
 
 You may also need to install ffmpeg, rust etc. Follow openAI instructions here https://github.com/openai/whisper#setup.
 
+<h2 align="left" id="docker">Docker 🐳</h2>
+
+We provide ready-to-build Docker images for both GPU (CUDA 12.8) and CPU.
+
+### Build locally
+
+GPU (requires NVIDIA driver + Docker with `nvidia-container-toolkit`):
+
+```bash
+docker build -f Dockerfile.cuda12 -t whisperx:cuda12 .
+```
+
+CPU:
+
+```bash
+docker build -f Dockerfile.cpu -t whisperx:cpu .
+```
+
+### Run
+
+GPU:
+
+```bash
+docker run --rm --gpus all \
+  -v "$PWD":/workspace \
+  whisperx:cuda12 /workspace/path/to/audio.wav --model large-v2 --output_format srt
+```
+
+CPU:
+
+```bash
+docker run --rm \
+  -v "$PWD":/workspace \
+  whisperx:cpu /workspace/path/to/audio.wav --device cpu --compute_type int8 --output_format srt
+```
+
+Speaker diarization (GPU/CPU) — set your Hugging Face token:
+
+```bash
+docker run --rm --gpus all \
+  -e HF_TOKEN=YOUR_HF_TOKEN \
+  -v "$PWD":/workspace \
+  whisperx:cuda12 /workspace/path/to/audio.wav --diarize --hf_token "$HF_TOKEN" --highlight_words True
+```
+
+### Pre-built images (GHCR)
+
+On pushes to `main`, GitHub Actions build and push images to GHCR:
+
+- `ghcr.io/<owner>/whisperx:cuda12`
+- `ghcr.io/<owner>/whisperx:cpu`
+- `ghcr.io/<owner>/whisperx:latest` (alias of `cpu`)
+
+Pull and run:
+
+```bash
+docker pull ghcr.io/<owner>/whisperx:cuda12
+docker run --rm --gpus all -v "$PWD":/workspace ghcr.io/<owner>/whisperx:cuda12 /workspace/audio.wav
+```
+
 ### Speaker Diarization
 
 To **enable Speaker Diarization**, include your Hugging Face access token (read) that you can generate from [Here](https://huggingface.co/settings/tokens) after the `--hf_token` argument and accept the user agreement for the following models: [Segmentation](https://huggingface.co/pyannote/segmentation-3.0) and [Speaker-Diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1) (if you choose to use Speaker-Diarization 2.x, follow requirements [here](https://huggingface.co/pyannote/speaker-diarization) instead.)

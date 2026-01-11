@@ -1,0 +1,37 @@
+# WhisperX CUDA 12.8 image (Ubuntu 22.04 + cuDNN)
+FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# System deps: Python, ffmpeg, audio libs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      python3 \
+      python3-venv \
+      python3-pip \
+      ffmpeg \
+      libsndfile1 \
+      git \
+      ca-certificates \
+      curl && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . /app
+
+# Create venv, install CUDA PyTorch stack explicitly, then project deps
+RUN python3 -m venv /opt/venv && \
+    . /opt/venv/bin/activate && \
+    pip install --upgrade pip setuptools wheel && \
+    pip install --index-url https://download.pytorch.org/whl/cu128 \
+        torch==2.8.0 \
+        torchaudio==2.8.0 && \
+    pip install -e .
+
+ENV PATH=/opt/venv/bin:$PATH
+
+# Runtime: mount working dir and expose CLI
+WORKDIR /workspace
+VOLUME ["/workspace"]
+
+ENTRYPOINT ["whisperx"]

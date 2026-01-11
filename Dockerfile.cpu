@@ -1,0 +1,30 @@
+# WhisperX CPU-only image (Debian slim)
+FROM python:3.11-slim
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# System deps: ffmpeg and audio libs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      ffmpeg \
+      libsndfile1 \
+      git \
+      ca-certificates \
+      curl && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . /app
+
+# Install CPU PyTorch stack explicitly, then project deps
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --index-url https://download.pytorch.org/whl/cpu \
+        torch==2.8.0 \
+        torchaudio==2.8.0 && \
+    pip install -e .
+
+# Runtime: mount working dir and expose CLI
+WORKDIR /workspace
+VOLUME ["/workspace"]
+
+ENTRYPOINT ["whisperx"]
